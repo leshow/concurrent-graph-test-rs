@@ -2,40 +2,36 @@ use std::thread::Thread;
 use std::sync::{Arc, RwLock};
 
 
-pub type Children<T> = Vec<NodeRef<T>>;
-pub struct NodeRef<T>(Arc<RwLock<Node<T>>>);
-// pub struct Children<T>(Arc<RwLock<Vec<T>>>);
-//
-// impl<T> Children<T> {
-//     fn new() -> Children<T> {
-//         Children(Arc::new(RwLock::new(Vec::new())))
-//     }
-// }
+type NodeRef<T> = Arc<RwLock<_Node<T>>>;
 
-pub struct Node<T> {
-    parent: Option<NodeRef<T>>,
-    children: Arc<RwLock<Children<T>>>,
+struct _Node<T> {
+    // parent: Option<NodeRef<T>>,
+    children: Vec<NodeRef<T>>,
     value: T,
 }
 
+pub struct Node<T>(NodeRef<T>);
+
 impl<T> Node<T> {
-    pub fn new(parent_: Option<NodeRef<T>>, value_: T) -> Node<T> {
-        Node::<T> {
-            parent: parent_,
-            children: Arc::new(RwLock::new(Vec::new())),
+    pub fn new(parent_: Option<Node<T>>, value_: T) -> Node<T> {
+        let node = _Node {
+            // parent: parent_,
+            children: Vec::new(),
             value: value_,
-        }
+        };
+        Node(Arc::new(RwLock::new(node)))
     }
     pub fn add_child(&self, child: Node<T>) {
-        self.children
+        self.0
             .write()
             .expect("Failed to get write lock on node")
-            .push(child);
+            .children
+            .push(child.0.clone())
     }
 }
 
 fn main() {
     let parent = Node::new(Option::None, 1u8);
-    let child = Node::new(parent.parent, 2u8);
-    parent.add_child(child);
+    // let child = Node::new(Option::Some(parent), 2u8);
+    // parent.add_child(NodeRef(child.clone()));
 }
