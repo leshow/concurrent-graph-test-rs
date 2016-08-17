@@ -74,11 +74,12 @@ fn main() {
         let val = child.read().expect("read lock child value").value;
         println!("got child val {:?}", val);
     }
+    // try a filter on children vec
     let count = children.iter()
         .filter(|&node| {
             let val = node.read().expect("filter read lock").value;
             val > 5
         })
-        .collect::<Vec<&NodeRef<u8>>>();
+        .collect::<Vec<_>>();
     println!("{:?} nodes bigger than 5", count.len());
 }
