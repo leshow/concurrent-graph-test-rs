@@ -1,18 +1,21 @@
 use std::thread;
 use std::sync::{Arc, RwLock};
 use std::sync::mpsc::channel;
-use std::time::Duration;
 
+/// type alias of a node reference
 type NodeRef<T> = Arc<RwLock<_Node<T>>>;
 
+/// private struct wrapping node data
 struct _Node<T> {
     parent: Option<NodeRef<T>>,
     children: Vec<NodeRef<T>>,
     pub value: T,
 }
 
+/// our public interface for accessing a node, using newtype
 pub struct Node<T>(NodeRef<T>);
 
+/// public node fns
 impl<T> Node<T> {
     pub fn new(value_: T) -> Self {
         let node = _Node {
@@ -47,7 +50,7 @@ fn main() {
 
 
     let (tx, rx) = channel();
-    let thread1 = thread::spawn(move || {
+    thread::spawn(move || {
         for n in 3..10u8 {
             let new_node = Node::new(n);
             tx.send(new_node).unwrap();
@@ -67,6 +70,4 @@ fn main() {
         let val = child.read().expect("rwlock child value").value;
         println!("got child val {:?}", val);
     }
-
-    thread1.join();
 }
