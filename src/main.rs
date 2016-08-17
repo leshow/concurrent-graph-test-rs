@@ -36,15 +36,15 @@ impl<T> Node<T> {
 
     }
 }
-
-struct Container<T> {
-    nodes: Vec<Node<T>>,
-}
-impl<T> Container<T> {
-    fn new(nodes: Vec<Node<T>>) -> Self {
-        Container { nodes: nodes }
-    }
-}
+// struct Container<T> {
+//     nodes: Vec<Node<T>>,
+// }
+//
+// impl<T> Container<T> {
+//     fn new(nodes: Vec<Node<T>>) -> Self {
+//         Container { nodes: nodes }
+//     }
+// }
 
 fn main() {
     let parent = Node::new(1u8);
@@ -53,10 +53,9 @@ fn main() {
     parent.add_child(&child);
     child.set_parent(&parent);
 
-    let container = Arc::new(Container::new(vec![parent, child]));
+    // let container = Arc::new(Container::new(vec![parent, child]));
 
     let (tx, rx) = channel();
-    let container_ref = container.clone();
     thread::spawn(move || {
         for n in 3..10u8 {
             let Node(new_node) = Node::new(n);
