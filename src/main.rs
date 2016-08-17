@@ -1,6 +1,7 @@
 use std::thread;
 use std::sync::{Arc, RwLock};
 use std::sync::mpsc::channel;
+use std::time::Duration;
 
 type NodeRef<T> = Arc<RwLock<_Node<T>>>;
 
@@ -44,22 +45,28 @@ fn main() {
     parent.add_child(&child);
     child.set_parent(&parent);
 
+
     let (tx, rx) = channel();
-    thread::spawn(move || {
+    let thread1 = thread::spawn(move || {
         for n in 3..10u8 {
             let new_node = Node::new(n);
             tx.send(new_node).unwrap();
         }
     });
 
-    loop {
-        if let Ok(node_to_add) = rx.recv() {
-            node_to_add.set_parent(&parent);
-            let unlock_node = node_to_add.0.read().expect("rwlock");
-            let val = unlock_node.value;
-            println!("got node {:?}", val);
-        } else {
-            break;
-        }
+    while let Ok(node_to_add) = rx.recv() {
+        parent.add_child(&node_to_add);
+        node_to_add.set_parent(&parent);
+        let unlock_node = node_to_add.0.read().expect("rwlock");
+        let val = unlock_node.value;
+        println!("got node {:?}", val);
     }
+
+    let ref children = parent.0.read().expect("parent read lock").children;
+    for child in children {
+        let val = child.read().expect("rwlock child value").value;
+        println!("got child val {:?}", val);
+    }
+
+    thread1.join();
 }
