@@ -36,15 +36,6 @@ impl<T> Node<T> {
 
     }
 }
-// struct Container<T> {
-//     nodes: Vec<Node<T>>,
-// }
-//
-// impl<T> Container<T> {
-//     fn new(nodes: Vec<Node<T>>) -> Self {
-//         Container { nodes: nodes }
-//     }
-// }
 
 fn main() {
     let parent = Node::new(1u8);
@@ -53,20 +44,19 @@ fn main() {
     parent.add_child(&child);
     child.set_parent(&parent);
 
-    // let container = Arc::new(Container::new(vec![parent, child]));
-
     let (tx, rx) = channel();
     thread::spawn(move || {
         for n in 3..10u8 {
-            let Node(new_node) = Node::new(n);
+            let new_node = Node::new(n);
             tx.send(new_node).unwrap();
         }
-
     });
 
+    // let parent = parent.0.clone();
     loop {
         if let Ok(node_to_add) = rx.recv() {
-            let unlock_node = node_to_add.read().expect("rwlock");
+            node_to_add.set_parent(&parent);
+            let unlock_node = node_to_add.0.read().expect("rwlock");
             let val = unlock_node.value;
             println!("got node {:?}", val);
         } else {
