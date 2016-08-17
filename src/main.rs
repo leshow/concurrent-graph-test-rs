@@ -58,7 +58,7 @@ fn main() {
 
     let (tx, rx) = channel();
     let container_ref = container.clone();
-    let handle = thread::spawn(move || {
+    thread::spawn(move || {
         for n in 3..10u8 {
             let new_node = Node::new(n);
             tx.send(new_node).unwrap();
@@ -67,15 +67,13 @@ fn main() {
     });
 
     let container_reftwo = container.clone();
-    let wg = chan::WaitGroup::new();
     loop {
         if let Ok(node_to_add) = rx.recv() {
             let unlock_node = node_to_add.0.read().expect("rwlock");
             let val = unlock_node.value;
             println!("got node {:?}", val);
+        } else {
+            break;
         }
-        wg.done();
     }
-    // handle.join().unwrap();
-    wg.wait();
 }
