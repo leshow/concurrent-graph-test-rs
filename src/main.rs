@@ -65,14 +65,14 @@ fn main() {
         node_to_add.set_parent(&parent);
         let unlock_node = node_to_add.0.read().expect("rwlock");
         let val = unlock_node.value;
-        println!("got node {:?}", val);
+        println!("got node {}", val);
     }
 
     // get read lock on parent and iterate through
     let ref children = parent.0.read().expect("parent read lock").children;
     for child in children {
         let val = child.read().expect("read lock child value").value;
-        println!("got child val {:?}", val);
+        println!("got child val {}", val);
     }
     // try a filter on children vec
     let count = children.iter()
@@ -81,5 +81,5 @@ fn main() {
             val > 5
         })
         .collect::<Vec<_>>();
-    println!("{:?} nodes bigger than 5", count.len());
+    println!("{} nodes bigger than 5", count.len());
 }
