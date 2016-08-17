@@ -2,16 +2,6 @@ use std::thread;
 use std::sync::{Arc, RwLock};
 use std::sync::mpsc::channel;
 
-
-// struct Node<T> {
-//     parent: Option<Node<T>>,
-//     children: Vec<Node<T>>,
-//     pub value: T,
-// }
-//
-// type NodeRef = Arc<RwLock<Node<T>>>;
-
-
 type NodeRef<T> = Arc<RwLock<_Node<T>>>;
 
 struct _Node<T> {
@@ -32,7 +22,6 @@ impl<T> Node<T> {
         Node(Arc::new(RwLock::new(node)))
     }
     pub fn add_child(&self, child: &Node<T>) {
-        // child.set_parent(&self);
         self.0
             .write()
             .expect("Failed to get write lock on node")
