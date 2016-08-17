@@ -2,6 +2,16 @@ use std::thread;
 use std::sync::{Arc, RwLock};
 use std::sync::mpsc::channel;
 
+
+// struct Node<T> {
+//     parent: Option<Node<T>>,
+//     children: Vec<Node<T>>,
+//     pub value: T,
+// }
+//
+// type NodeRef = Arc<RwLock<Node<T>>>;
+
+
 type NodeRef<T> = Arc<RwLock<_Node<T>>>;
 
 struct _Node<T> {
@@ -60,16 +70,15 @@ fn main() {
     let container_ref = container.clone();
     thread::spawn(move || {
         for n in 3..10u8 {
-            let new_node = Node::new(n);
+            let Node(new_node) = Node::new(n);
             tx.send(new_node).unwrap();
         }
 
     });
 
-    let container_reftwo = container.clone();
     loop {
         if let Ok(node_to_add) = rx.recv() {
-            let unlock_node = node_to_add.0.read().expect("rwlock");
+            let unlock_node = node_to_add.read().expect("rwlock");
             let val = unlock_node.value;
             println!("got node {:?}", val);
         } else {
