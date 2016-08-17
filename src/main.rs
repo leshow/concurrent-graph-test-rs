@@ -6,6 +6,7 @@ use std::sync::mpsc::channel;
 type NodeRef<T> = Arc<RwLock<_Node<T>>>;
 
 /// private struct wrapping node data
+#[derive(Debug)]
 struct _Node<T> {
     parent: Option<NodeRef<T>>,
     children: Vec<NodeRef<T>>,
@@ -48,8 +49,9 @@ fn main() {
     parent.add_child(&child);
     child.set_parent(&parent);
 
-
+    // sender/receiver from channel
     let (tx, rx) = channel();
+    // make worker thread to create nodes
     thread::spawn(move || {
         for n in 3..10u8 {
             let new_node = Node::new(n);
@@ -57,6 +59,7 @@ fn main() {
         }
     });
 
+    // wait to get all the nodes
     while let Ok(node_to_add) = rx.recv() {
         parent.add_child(&node_to_add);
         node_to_add.set_parent(&parent);
@@ -65,9 +68,17 @@ fn main() {
         println!("got node {:?}", val);
     }
 
+    // get read lock on parent and iterate through
     let ref children = parent.0.read().expect("parent read lock").children;
     for child in children {
-        let val = child.read().expect("rwlock child value").value;
+        let val = child.read().expect("read lock child value").value;
         println!("got child val {:?}", val);
     }
+    let count = children.iter()
+        .filter(|&node| {
+            let val = node.read().expect("filter read lock").value;
+            val > 5
+        })
+        .collect::<Vec<&NodeRef<u8>>>();
+    println!("{:?} nodes bigger than 5", count.len());
 }
