@@ -52,7 +52,6 @@ fn main() {
         }
     });
 
-    // let parent = parent.0.clone();
     loop {
         if let Ok(node_to_add) = rx.recv() {
             node_to_add.set_parent(&parent);
